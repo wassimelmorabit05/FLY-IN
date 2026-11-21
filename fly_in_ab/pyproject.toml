@@ -1,0 +1,17 @@
+[project]
+name = "fly-in"
+version = "1.0.0"
+description = "A small, object-oriented drone routing simulation"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["pygame==2.6.1"]
+
+[dependency-groups]
+dev = ["flake8>=7,<8", "mypy>=1.10,<3"]
+
+[tool.uv]
+package = false
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
