@@ -1,0 +1,90 @@
+
+"""Find the shortest path between two hubs using Dijkstra's algorithm."""
+
+from math import inf
+from typing import Any
+from graph import Graph
+from parser import Parser
+
+
+class Dijkstra:
+    """Find the lowest-cost path through the graph."""
+
+    def __init__(self) -> None:
+        """Load the map configuration and build the graph."""
+        configs = Parser().pars()
+        if configs is None:
+            raise ValueError("Invalid configuration")
+        self.configs = configs
+        self.graph_dict = Graph().graph()
+
+    def algo(self, blocked: str | None = None) -> list[str]:
+        """Find the shortest path while optionally avoiding one hub.
+
+        Args:
+            blocked: Name of a hub to exclude from the search.
+
+        Returns:
+            A list of hub names forming the shortest path,
+            or an empty list if no path is found.
+        """
+        if blocked is None:
+            blocked = ""
+
+        table: dict[str, list[Any]] = {}
+        start_hub_name = self.configs["start_hub"]["name"]
+        goal = self.configs["end_hub"]["name"]
+
+        for hub in self.graph_dict:
+            table[hub] = (
+                [0, None]
+                if hub == start_hub_name
+                else [inf, None]
+                )
+
+        unvisited = [
+            hub
+            for hub in self.graph_dict
+            if hub != blocked
+            ]
+        current_zone = start_hub_name
+        while True:
+            neighbors = self.graph_dict[current_zone][1]
+            for neighbor in neighbors:
+                if neighbor == blocked:
+                    continue
+
+                if neighbor not in unvisited:
+                    continue
+
+                cost = self.graph_dict[neighbor][0]
+                if cost == -1:
+                    continue
+
+                new_distance = table[current_zone][0] + cost
+                if new_distance < table[neighbor][0]:
+                    table[neighbor] = [new_distance, current_zone]
+
+            if current_zone == goal:
+                break
+
+            unvisited.remove(current_zone)
+
+            current_zone = min(
+                unvisited,
+                key=lambda hub: table[hub][0]
+            )
+
+        if table[goal][0] == inf:
+            return []
+
+        path = []
+        zone = goal
+        while zone != start_hub_name:
+            path.append(zone)
+            zone = table[zone][1]
+
+        path.append(start_hub_name)
+        path.reverse()
+
+        return path
